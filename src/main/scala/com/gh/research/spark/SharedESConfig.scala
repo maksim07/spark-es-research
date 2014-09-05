@@ -23,10 +23,7 @@ object SharedESConfig {
       case _ => // Skip it
     }
 
-    // This tells the ES MR output format to use the spark partition index as the node index
-    // This will degrade performance unless you have the same partition layout as ES in which case
-    // it should improve performance.
-    // Note: this is currently implemented as kind of a hack.
+
     if (esSparkPartition) {
       jobConf.set("es.sparkpartition", "true")
     }
