@@ -1,13 +1,7 @@
 package com.gh.research.spark
 
-// Scala imports
 import scala.collection.JavaConversions._
-import scala.collection.immutable.HashMap
-// Hadoop imports
 import org.apache.hadoop.io.{MapWritable, Text, NullWritable}
-// twitter imports
-import twitter4j.Status
-import twitter4j.TwitterFactory
 
 
 /**
@@ -17,27 +11,20 @@ import twitter4j.TwitterFactory
 object SharedIndex {
 
   // twitter helper methods
-  def prepareTweets(tweet: twitter4j.Status) = {
-    println("panda preparing tweet!")
-    val fields = tweet.getGeoLocation() match {
-      case null => HashMap(
-        "docid" -> tweet.getId().toString,
-        "message" -> tweet.getText(),
-        "hashTags" -> tweet.getHashtagEntities().map(_.getText()).mkString(" ")
-      )
-      case loc => {
-        val lat = loc.getLatitude()
-        val lon = loc.getLongitude()
-        HashMap(
-          "docid" -> tweet.getId().toString,
-          "message" -> tweet.getText(),
-          "hashTags" -> tweet.getHashtagEntities().map(_.getText()).mkString(" "),
-          "location" -> s"$lat,$lon"
-        )
-      }
-    }
-    val output = mapToOutput(fields)
+  def prepareTweets(tweet: String) = {
+    val output = mapToOutput(Map("message" -> tweet))
     output
+  }
+
+  // hadoop helper methods
+  def mapToOutput(in: Map[String, String]): (Object, Object) = {
+    val m = new MapWritable
+    for ((k, v) <- in)
+      m.put(new Text(k), new Text(v))
+    (NullWritable.get, m)
+  }
+  def mapWritableToInput(in: MapWritable): Map[String, String] = {
+    in.map{case (k, v) => (k.toString, v.toString)}.toMap
   }
 
   def setupTwitter(consumerKey: String, consumerSecret: String, accessToken: String, accessTokenSecret: String) ={
@@ -55,20 +42,6 @@ object SharedIndex {
     System.setProperty("twitter4j.oauth.accessTokenURL", "https://api.twitter.com/oauth/access_token")
     System.setProperty("twitter4j.oauth.authorizationURL", "https://api.twitter.com/oauth/authorize")
     System.setProperty("twitter4j.oauth.authenticationURL", "https://api.twitter.com/oauth/authenticate")
-  }
-
-  def fetchTweets(ids: Seq[String]) = {
-    val twitter = new TwitterFactory().getInstance();
-  }
-  // hadoop helper methods
-  def mapToOutput(in: Map[String, String]): (Object, Object) = {
-    val m = new MapWritable
-    for ((k, v) <- in)
-      m.put(new Text(k), new Text(v))
-    (NullWritable.get, m)
-  }
-  def mapWritableToInput(in: MapWritable): Map[String, String] = {
-    in.map{case (k, v) => (k.toString, v.toString)}.toMap
   }
 
 }
