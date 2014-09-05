@@ -8,7 +8,7 @@ import org.apache.spark.{SparkContext, SparkConf}
  */
 object WordsCount extends App {
 
-  assume(args.size > 0, "USAGE: java ru.svyaznoy.research.spark.WordCount <text-file>")
+  assume(args.size > 0, "USAGE: java com.gh.research.spark.WordCount <text-file>")
 
   val conf = new SparkConf().setAppName("word-count").setMaster("local")
   val spark = new SparkContext(conf)
